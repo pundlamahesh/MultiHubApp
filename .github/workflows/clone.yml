@@ -2,6 +2,9 @@ name: Clone Repo via IAM + SSM
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   clone:
@@ -25,7 +28,7 @@ jobs:
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceids,Values=i-0508584264047e7ff" \
+            --targets "Key=instanceIds,Values=i-0508584264047e7ff" \
             --parameters commands='[
               "cd /home/ec2-user || exit",
               "rm -rf MultiHubApp || true",
