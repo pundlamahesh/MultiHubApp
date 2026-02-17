@@ -2,6 +2,9 @@ name: Clone MultiHubApp on EC2
 
 on:
   workflow_dispatch:   # manual trigger
+  push:
+    branches:
+      - main
 
 jobs:
   clone:
