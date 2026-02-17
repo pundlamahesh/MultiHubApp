@@ -29,5 +29,8 @@ jobs:
             --parameters commands='[
               "cd /home/ec2-user || exit",
               "rm -rf MultiHubApp || true",
-              "git clone https://github.com/pundlamahesh/MultiHubApp.git"
+              "git clone https://github.com/pundlamahesh/MultiHubApp.git",
+              "cd MultiHubApp",
+              "rm -rf /var/www/html/* || true",
+              "mv * /var/www/html/"
             ]'
