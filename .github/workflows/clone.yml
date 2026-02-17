@@ -1,4 +1,4 @@
-name: Clone via SSH
+name: Clone Repo via IAM + SSM
 
 on:
   workflow_dispatch:
@@ -7,18 +7,27 @@ jobs:
   clone:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H YOUR_EC2_PUBLIC_IP >> ~/.ssh/known_hosts
+    permissions:
+      id-token: write
+      contents: read
 
-      - name: Clone on EC2
+    steps:
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::339713188167:role/role1
+          aws-region: us-east-1
+
+      - name: Debug AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Clone Repo on EC2
         run: |
-          ssh ec2-user@YOUR_EC2_PUBLIC_IP "
-            cd /home/ec2-user &&
-            rm -rf MultiHubApp || true &&
-            git clone https://github.com/pundlamahesh/MultiHubApp.git
-          "
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceids,Values=i-0508584264047e7ff" \
+            --parameters commands='[
+              "cd /home/ec2-user || exit",
+              "rm -rf MultiHubApp || true",
+              "git clone https://github.com/pundlamahesh/MultiHubApp.git"
+            ]'
